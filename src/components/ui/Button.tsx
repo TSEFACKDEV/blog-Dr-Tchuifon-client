@@ -69,7 +69,7 @@ const Button: React.FC<ButtonProps> = ({
         whileTap={{ scale: 0.98 }}
         className={baseClasses}
         disabled={disabled || loading}
-        {...props}
+        {...(props as any)}
       >
         {ButtonContent}
       </motion.button>
