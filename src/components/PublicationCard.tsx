@@ -100,12 +100,11 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication, onEdit, 
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                <Link
-                  to={`/publications/${publication.slug}`}
-                  className={`text-xl font-bold mb-3 line-clamp-2 bg-gradient-to-r ${typeInfo.gradient} bg-clip-text text-transparent hover:scale-[1.02] transition-transform duration-200 block`}
+                <h3
+                  className={`text-xl font-bold mb-3 line-clamp-2 bg-gradient-to-r ${typeInfo.gradient} bg-clip-text text-transparent hover:scale-[1.02] transition-transform duration-200`}
                 >
                   {publication.title}
-                </Link>
+                </h3>
               </motion.div>
 
               {/* Authors */}
@@ -222,46 +221,45 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication, onEdit, 
                 </motion.div>
               )}
             </div>
-
-            {/* Admin Actions */}
-            {isAdmin && (
-              <div className="flex flex-col gap-2 mt-4 pt-4 border-t md:border-t-0 md:mt-0 md:pt-0 md:border-l md:pl-4">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => navigate(`/publications/${publication.slug}`)}
-                  className="w-full"
-                >
-                  <FaEye className="mr-1" />
-                  Voir
-                </Button>
-                {onEdit && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={onEdit}
-                    className="w-full"
-                  >
-                    <FaEdit className="mr-1" />
-                    Modifier
-                  </Button>
-                )}
-                {onDelete && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={onDelete}
-                    className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <FaTrash className="mr-1" />
-                    Supprimer
-                  </Button>
-                )}
-              </div>
-            )}
           </div>
         </div>
-      </div>
+        </div>
+      </Link>
+
+      {/* Admin Actions (outside Link) */}
+      {isAdmin && (onEdit || onDelete) && (
+        <div className="absolute top-4 right-4 flex gap-2 z-10">
+          {onEdit && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onEdit();
+              }}
+            >
+              <FaEdit className="mr-1" />
+              Modifier
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <FaTrash className="mr-1" />
+              Supprimer
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Decorative corner element */}
       <motion.div
