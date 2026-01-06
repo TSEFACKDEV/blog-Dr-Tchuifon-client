@@ -22,7 +22,11 @@ export const CollaboratorCard: React.FC<CollaboratorCardProps> = ({
 
   return (
     <Card>
-      <div className="flex items-start gap-4">
+      <div
+        onClick={() => navigate(`/collaborators/${collaborator.id}`)}
+        className="cursor-pointer"
+      >
+        <div className="flex items-start gap-4">
         {/* Photo */}
         <div className="flex-shrink-0">
           {collaborator.photoUrl ? (
@@ -94,6 +98,7 @@ export const CollaboratorCard: React.FC<CollaboratorCardProps> = ({
             </div>
           )}
         </div>
+      </div>
       </div>
 
       {/* Admin Actions */}

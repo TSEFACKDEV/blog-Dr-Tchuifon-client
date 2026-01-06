@@ -49,7 +49,11 @@ export const SupervisionCard: React.FC<SupervisionCardProps> = ({
 
   return (
     <Card>
-      <div className="flex items-start justify-between mb-4">
+      <div
+        onClick={() => navigate(`/supervisions/${supervision.id}`)}
+        className="cursor-pointer"
+      >
+        <div className="flex items-start justify-between mb-4">
         <Badge variant={(levelColors[supervision.level] || 'blue') as BadgeVariant}>
           {supervision.level}
         </Badge>
@@ -98,6 +102,7 @@ export const SupervisionCard: React.FC<SupervisionCardProps> = ({
           </p>
         </div>
       )}
+      </div>
 
       {/* Admin Actions */}
       {isAdmin && (onEdit || onDelete) && (

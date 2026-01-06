@@ -66,8 +66,12 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication, onEdit, 
       className="relative group"
     >
       {/* Gradient border */}
-      <div className={`relative bg-gradient-to-br ${typeInfo.gradient} rounded-2xl p-[2px] shadow-xl hover:shadow-2xl transition-all duration-300`}>
-        <div className="bg-white rounded-2xl p-6 h-full">
+      <Link
+        to={`/publications/${publication.id}`}
+        className="block"
+      >
+        <div className={`relative bg-gradient-to-br ${typeInfo.gradient} rounded-2xl p-[2px] shadow-xl hover:shadow-2xl transition-all duration-300`}>
+          <div className="bg-white rounded-2xl p-6 h-full">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div className="flex-1">
               {/* Type Badge with Year */}
