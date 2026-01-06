@@ -115,7 +115,7 @@ export const CoursesPage: React.FC = () => {
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               Explorez les différents cours que j'enseigne, couvrant divers domaines de 
-              l'informatique et du génie, de la licence au doctorat.
+              la Chimie-Physique et du Génie des Procédés, de la licence au doctorat.
             </p>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}

@@ -77,7 +77,7 @@ export const PublicationsPage: React.FC = () => {
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Découvrez mes contributions à la recherche scientifique dans les domaines de 
-              l'intelligence artificielle, du machine learning et de l'informatique.
+              la Chimie-Physique, du Génie des Procédés et des procédés industriels.
             </p>
             <div className="flex justify-center gap-8 mt-8 text-center">
               <div className="animate-scale-in animation-delay-100">
