@@ -27,7 +27,7 @@
    - [ ] `PORT=10000`
    - [ ] `DATABASE_URL=<from step 3>`
    - [ ] `JWT_SECRET=<generate secure secret>`
-   - [ ] `MAIL_HOST`, `MAIL_PORT`, `MAIL_USER`, `MAIL_PASSWORD`
+   - [ ] `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`
    - [ ] `ALLOWED_ORIGINS=*` (update after Vercel deployment)
 6. [ ] Click "Create Web Service"
 7. [ ] Wait for deployment (5-10 min)

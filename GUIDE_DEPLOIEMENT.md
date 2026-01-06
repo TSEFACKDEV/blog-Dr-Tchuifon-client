@@ -67,12 +67,13 @@ Dans la section **"Environment Variables"**, ajoutez :
 | `NODE_ENV` | `production` |
 | `PORT` | `10000` |
 | `DATABASE_URL` | La Database URL copiée à l'étape 3 |
-| `JWT_SECRET` | Générez un secret aléatoire (ex: `openssl rand -base64 32`) |
-| `MAIL_HOST` | `smtp.gmail.com` (ou votre fournisseur) |
-| `MAIL_PORT` | `587` |
-| `MAIL_USER` | Votre email |
-| `MAIL_PASSWORD` | Mot de passe d'application Gmail |
-| `MAIL_FROM` | `noreply@votredomaine.com` |
+| `JWT_SECRET` | Générez un secret aléatoire (min 32 caractères) |
+| `SMTP_HOST` | `smtp.gmail.com` (ou votre fournisseur) |
+| `SMTP_PORT` | `587` |
+| `SMTP_USER` | Votre email Gmail |
+| `SMTP_PASS` | Mot de passe d'application Gmail |
+| `FROM_EMAIL` | `noreply@votredomaine.com` (optionnel) |
+| `FROM_NAME` | `Dr Tchuifon` (optionnel) |
 | `ALLOWED_ORIGINS` | `*` (on mettra l'URL Vercel après) |
 
 **Pour générer un JWT_SECRET sécurisé** :
@@ -81,6 +82,15 @@ Dans la section **"Environment Variables"**, ajoutez :
   -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 32 | % {[char]$_})
   ```
 - Ou utilisez : `VotreSecretTresLongEtComplexe123456789`
+
+**Pour obtenir un mot de passe d'application Gmail** :
+1. Allez sur [myaccount.google.com/security](https://myaccount.google.com/security)
+2. Activez la "Validation en 2 étapes" si ce n'est pas déjà fait
+3. Cherchez "Mots de passe des applications" (App passwords)
+4. Sélectionnez "Autre (nom personnalisé)" et entrez "Render Blog"
+5. Copiez le mot de passe généré (16 caractères) et utilisez-le comme `SMTP_PASS`
+
+⚠️ **Important** : N'utilisez JAMAIS votre mot de passe Gmail principal !
 
 ### Étape 6 : Déployer
 
