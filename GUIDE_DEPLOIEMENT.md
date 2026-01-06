@@ -247,6 +247,12 @@ npx prisma migrate deploy
 npx prisma generate
 ```
 
+### Erreurs de build TypeScript sur Vercel :
+1. Vérifiez que le fichier `src/vite-env.d.ts` existe
+2. Vérifiez les erreurs dans les logs de Vercel
+3. Testez le build en local : `npm run build`
+4. Si nécessaire, ajustez `noUnusedLocals` et `noUnusedParameters` dans `tsconfig.app.json`
+
 ---
 
 ## 📝 Prochaines étapes
