@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { motion, AnimatePresence } from 'framer-motion';
 import type { AppDispatch, RootState } from '../store';
 import { getCourseById } from '../store/cours/actions';
 import { MainLayout } from '../layouts/MainLayout';
@@ -32,278 +31,188 @@ export const CourseDetailsPage: React.FC = () => {
   }
 
   const getLevelInfo = (level: string) => {
-    const info: Record<string, { label: string; gradient: string }> = {
+    const info: Record<string, { label: string; color: string; bgColor: string }> = {
       LICENCE: { 
         label: 'Licence', 
-        gradient: 'from-green-500 via-emerald-600 to-teal-600'
+        color: 'text-green-700',
+        bgColor: 'bg-green-50'
       },
       MASTER: { 
         label: 'Master', 
-        gradient: 'from-blue-500 via-blue-600 to-indigo-600'
+        color: 'text-blue-700',
+        bgColor: 'bg-blue-50'
       },
       INGENIEUR: { 
         label: 'Ingénieur', 
-        gradient: 'from-yellow-500 via-orange-600 to-red-600'
+        color: 'text-orange-700',
+        bgColor: 'bg-orange-50'
       },
       DOCTORAT: { 
         label: 'Doctorat', 
-        gradient: 'from-purple-500 via-purple-600 to-pink-600'
+        color: 'text-purple-700',
+        bgColor: 'bg-purple-50'
       },
     };
-    return info[level] || { label: level, gradient: 'from-gray-500 via-gray-600 to-slate-600' };
+    return info[level] || { label: level, color: 'text-gray-700', bgColor: 'bg-gray-50' };
   };
 
   const levelInfo = getLevelInfo(currentCourse.level);
 
   return (
     <MainLayout>
-      <AnimatePresence>
-        <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 py-8 sm:py-12">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Bouton retour */}
-          <motion.div
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.3 }}
+          <button
+            onClick={() => navigate('/courses')}
+            className="group flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8 transition-colors"
           >
-            <Button
-              variant="secondary"
-              onClick={() => navigate('/courses')}
-              className="mb-6"
-            >
-              <FaArrowLeft className="mr-2" />
-              Retour aux cours
-            </Button>
-          </motion.div>
+            <FaArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-medium">Retour aux cours</span>
+          </button>
 
-          {/* En-tête avec gradient */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className={`relative bg-gradient-to-br ${levelInfo.gradient} rounded-3xl p-[2px] shadow-2xl mb-8`}
-          >
-            <div className="bg-white rounded-3xl p-8">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  {/* Badge niveau et code */}
-                  <motion.div 
-                    className="flex items-center gap-3 mb-4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r ${levelInfo.gradient} text-white text-sm font-semibold shadow-lg`}
-                    >
-                      <FaGraduationCap />
-                      <span>{levelInfo.label}</span>
-                    </motion.div>
-                    {currentCourse.code && (
-                      <span className="px-3 py-1 bg-gray-100 text-gray-700 font-mono text-sm rounded-lg">
-                        {currentCourse.code}
-                      </span>
-                    )}
-                  </motion.div>
-                  
-                  {/* Titre avec gradient */}
-                  <h1 className={`text-4xl font-bold mb-6 bg-gradient-to-r ${levelInfo.gradient} bg-clip-text text-transparent`}>
-                    {currentCourse.title}
-                  </h1>
-
-                  {/* Métadonnées en grid */}
-                  <motion.div 
-                    className="grid grid-cols-1 md:grid-cols-3 gap-4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    {currentCourse.credits && (
-                      <motion.div 
-                        className="flex items-center gap-3 p-3 rounded-xl bg-blue-50"
-                        whileHover={{ scale: 1.05 }}
-                      >
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-md">
-                          <FaBook />
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500">Crédits</p>
-                          <p className="font-bold text-gray-900">{currentCourse.credits}</p>
-                        </div>
-                      </motion.div>
-                    )}
-                    {currentCourse.hours && (
-                      <motion.div 
-                        className="flex items-center gap-3 p-3 rounded-xl bg-green-50"
-                        whileHover={{ scale: 1.05 }}
-                      >
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white shadow-md">
-                          <FaClock />
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500">Durée</p>
-                          <p className="font-bold text-gray-900">{currentCourse.hours}h</p>
-                        </div>
-                      </motion.div>
-                    )}
-                    {currentCourse.semester && (
-                      <motion.div 
-                        className="flex items-center gap-3 p-3 rounded-xl bg-purple-50"
-                        whileHover={{ scale: 1.05 }}
-                      >
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white shadow-md">
-                          <FaCalendar />
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500">Semestre</p>
-                          <p className="font-bold text-gray-900">S{currentCourse.semester}</p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </motion.div>
-                </div>
-              </div>
+          {/* En-tête */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/50 p-8 sm:p-10 mb-6 sm:mb-8 hover:shadow-md transition-shadow duration-300">
+            {/* Badge niveau et code */}
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${levelInfo.bgColor} ${levelInfo.color} text-sm font-semibold shadow-sm border border-current/10`}>
+                <FaGraduationCap className="w-4 h-4" />
+                {levelInfo.label}
+              </span>
+              {currentCourse.code && (
+                <span className="px-3 py-1.5 bg-gray-50 text-gray-700 font-mono text-xs rounded-lg border border-gray-200">
+                  {currentCourse.code}
+                </span>
+              )}
             </div>
+            
+            {/* Titre */}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-8 break-words leading-tight">
+              {currentCourse.title}
+            </h1>
 
-            {/* Élément décoratif */}
-            <motion.div
-              className={`absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br ${levelInfo.gradient} rounded-full opacity-20 blur-2xl`}
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 3, repeat: Infinity }}
-            />
-          </motion.div>
+            {/* Métadonnées en grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              {currentCourse.credits && (
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100/30 border border-blue-200/50 hover:border-blue-300/50 transition-all duration-300">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-md">
+                    <FaBook className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Crédits</p>
+                    <p className="text-lg font-bold text-gray-900">{currentCourse.credits}</p>
+                  </div>
+                </div>
+              )}
+              {currentCourse.hours && (
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-100/30 border border-green-200/50 hover:border-green-300/50 transition-all duration-300">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white shadow-md">
+                    <FaClock className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Durée</p>
+                    <p className="text-lg font-bold text-gray-900">{currentCourse.hours}h</p>
+                  </div>
+                </div>
+              )}
+              {currentCourse.semester && (
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100/30 border border-purple-200/50 hover:border-purple-300/50 transition-all duration-300">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white shadow-md">
+                    <FaCalendar className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Semestre</p>
+                    <p className="text-lg font-bold text-gray-900">S{currentCourse.semester}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Description */}
           {currentCourse.description && (
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="relative bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 rounded-3xl p-[2px] shadow-xl mb-8"
-            >
-              <div className="bg-white rounded-3xl p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <motion.div
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.5 }}
-                    className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg"
-                  >
-                    <FaBook className="text-xl" />
-                  </motion.div>
-                  <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">
-                    Description
-                  </h2>
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/50 p-8 sm:p-10 mb-6 sm:mb-8 hover:shadow-md transition-shadow duration-300">
+              <div className="flex items-center gap-4 mb-6 pb-5 border-b border-gray-200/60">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-md">
+                  <FaBook className="w-5 h-5" />
                 </div>
-                <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-line">
-                  {currentCourse.description}
-                </p>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Description
+                </h2>
               </div>
-            </motion.div>
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line break-words text-base sm:text-lg">
+                {currentCourse.description}
+              </p>
+            </div>
           )}
 
           {/* Objectifs */}
           {currentCourse.objectives && (
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="relative bg-gradient-to-br from-green-500 via-emerald-600 to-teal-600 rounded-3xl p-[2px] shadow-xl mb-8"
-            >
-              <div className="bg-white rounded-3xl p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <motion.div
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.5 }}
-                    className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-white shadow-lg"
-                  >
-                    <FaListUl className="text-xl" />
-                  </motion.div>
-                  <h2 className="text-3xl font-bold bg-gradient-to-r from-green-500 to-teal-600 bg-clip-text text-transparent">
-                    Objectifs du cours
-                  </h2>
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/50 p-8 sm:p-10 mb-6 sm:mb-8 hover:shadow-md transition-shadow duration-300">
+              <div className="flex items-center gap-4 mb-6 pb-5 border-b border-gray-200/60">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white shadow-md">
+                  <FaListUl className="w-5 h-5" />
                 </div>
-                <div className="text-gray-700 leading-relaxed text-lg whitespace-pre-line">
-                  {currentCourse.objectives}
-                </div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Objectifs du cours
+                </h2>
               </div>
-            </motion.div>
+              <div className="text-gray-700 leading-relaxed whitespace-pre-line break-words text-lg">
+                {currentCourse.objectives}
+              </div>
+            </div>
           )}
 
           {/* Syllabus */}
           {currentCourse.syllabus && (
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="relative bg-gradient-to-br from-purple-500 via-purple-600 to-pink-600 rounded-3xl p-[2px] shadow-xl mb-8"
-            >
-              <div className="bg-white rounded-3xl p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <motion.div
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.5 }}
-                    className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white shadow-lg"
-                  >
-                    <FaListUl className="text-xl" />
-                  </motion.div>
-                  <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-600 bg-clip-text text-transparent">
-                    Contenu du cours
-                  </h2>
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/50 p-8 sm:p-10 mb-6 sm:mb-8 hover:shadow-md transition-shadow duration-300">
+              <div className="flex items-center gap-4 mb-6 pb-5 border-b border-gray-200/60">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white shadow-md">
+                  <FaListUl className="w-5 h-5" />
                 </div>
-                <div className="text-gray-700 leading-relaxed text-lg whitespace-pre-line">
-                  {currentCourse.syllabus}
-                </div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Contenu du cours
+                </h2>
               </div>
-            </motion.div>
+              <div className="text-gray-700 leading-relaxed whitespace-pre-line break-words text-lg">
+                {currentCourse.syllabus}
+              </div>
+            </div>
           )}
 
           {/* Statut */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className={`relative ${
-              currentCourse.isActive 
-                ? 'bg-gradient-to-br from-green-500 via-emerald-600 to-teal-600' 
-                : 'bg-gradient-to-br from-gray-500 via-gray-600 to-slate-600'
-            } rounded-3xl p-[2px] shadow-xl`}
-          >
-            <div className="bg-white rounded-3xl p-8">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <motion.div
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.5 }}
-                    className={`w-12 h-12 rounded-full ${
-                      currentCourse.isActive
-                        ? 'bg-gradient-to-br from-green-500 to-teal-600'
-                        : 'bg-gradient-to-br from-gray-500 to-slate-600'
-                    } flex items-center justify-center text-white shadow-lg`}
-                  >
-                    {currentCourse.isActive ? <FaCheckCircle className="text-xl" /> : <FaTimesCircle className="text-xl" />}
-                  </motion.div>
-                  <div>
-                    <p className="text-sm text-gray-500">Statut du cours</p>
-                    <p className="text-xl font-bold text-gray-900">
-                      {currentCourse.isActive ? 'Cours actif' : 'Cours inactif'}
-                    </p>
-                  </div>
+          <div className={`backdrop-blur-sm rounded-2xl shadow-sm border p-6 sm:p-8 transition-all duration-300 ${
+            currentCourse.isActive 
+              ? 'bg-gradient-to-br from-green-50/50 via-white/80 to-white/80 border-green-200/60 hover:border-green-300/60' 
+              : 'bg-white/80 border-gray-200/50 hover:shadow-md'
+          }`}>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-4">
+                <div className={`w-14 h-14 rounded-xl shadow-md flex items-center justify-center transition-all duration-300 ${
+                  currentCourse.isActive
+                    ? 'bg-gradient-to-br from-green-500 to-green-600 text-white'
+                    : 'bg-gray-100 text-gray-400'
+                }`}>
+                  {currentCourse.isActive ? <FaCheckCircle className="w-6 h-6" /> : <FaTimesCircle className="w-6 h-6" />}
                 </div>
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  className={`px-6 py-3 rounded-full ${
-                    currentCourse.isActive
-                      ? 'bg-gradient-to-r from-green-500 to-teal-600'
-                      : 'bg-gradient-to-r from-gray-500 to-slate-600'
-                  } text-white font-semibold shadow-lg`}
-                >
-                  {currentCourse.isActive ? 'Actif' : 'Inactif'}
-                </motion.div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">Statut du cours</p>
+                  <p className="text-xl font-bold text-gray-900 mt-1">
+                    {currentCourse.isActive ? 'Cours actif' : 'Cours inactif'}
+                  </p>
+                </div>
               </div>
+              <span className={`px-6 py-2.5 rounded-xl font-semibold shadow-md transition-all duration-300 ${
+                currentCourse.isActive
+                  ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:shadow-lg'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}>
+                {currentCourse.isActive ? 'Actif' : 'Inactif'}
+              </span>
             </div>
-          </motion.div>
+          </div>
         </div>
-      </AnimatePresence>
+      </div>
     </MainLayout>
   );
 };

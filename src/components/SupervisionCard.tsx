@@ -1,9 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaCalendar, FaGraduationCap, FaCheckCircle, FaClock, FaSpinner, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
+import { FaUser, FaCalendar, FaGraduationCap, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
 import type { Supervision } from '../types';
-import Card from './ui/Card';
-import Badge from './ui/Badge';
 import Button from './ui/Button';
 
 interface SupervisionCardProps {
@@ -13,30 +11,36 @@ interface SupervisionCardProps {
   isAdmin?: boolean;
 }
 
-type BadgeVariant = 'blue' | 'green' | 'yellow' | 'red' | 'purple' | 'pink' | 'gray';
-
-const levelColors: Record<string, BadgeVariant> = {
-  LICENCE: 'blue',
-  MASTER: 'green',
-  DOCTORAT: 'purple',
+const getLevelLabel = (level: string) => {
+  const labels: Record<string, string> = {
+    LICENCE: 'Licence',
+    MASTER: 'Master',
+    DOCTORAT: 'Doctorat',
+    POSTDOC: 'Post-doctorat',
+  };
+  return labels[level] || level;
 };
 
-const statusColors: Record<string, BadgeVariant> = {
-  EN_COURS: 'blue',
-  SOUTENU: 'green',
-  ABANDONNE: 'red',
+const getStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    IN_PROGRESS: 'En cours',
+    COMPLETED: 'Terminé',
+    SUSPENDED: 'Suspendu',
+  };
+  return labels[status] || status;
 };
 
-const statusLabels: Record<string, string> = {
-  EN_COURS: 'En cours',
-  SOUTENU: 'Soutenu',
-  ABANDONNE: 'Abandonné',
-};
-
-const statusIcons: Record<string, React.ReactNode> = {
-  EN_COURS: <FaSpinner className="animate-spin" />,
-  SOUTENU: <FaCheckCircle />,
-  ABANDONNE: <FaClock />,
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'IN_PROGRESS':
+      return 'text-blue-700 bg-blue-50';
+    case 'COMPLETED':
+      return 'text-green-700 bg-green-50';
+    case 'SUSPENDED':
+      return 'text-orange-700 bg-orange-50';
+    default:
+      return 'text-gray-700 bg-gray-50';
+  }
 };
 
 export const SupervisionCard: React.FC<SupervisionCardProps> = ({ 
@@ -48,69 +52,60 @@ export const SupervisionCard: React.FC<SupervisionCardProps> = ({
   const navigate = useNavigate();
 
   return (
-    <Card>
+    <div className="bg-white border border-gray-200 rounded-lg hover:shadow-lg transition-shadow duration-300">
       <div
         onClick={() => navigate(`/supervisions/${supervision.id}`)}
-        className="cursor-pointer"
+        className="cursor-pointer p-6"
       >
-        <div className="flex items-start justify-between mb-4">
-        <Badge variant={(levelColors[supervision.level] || 'blue') as BadgeVariant}>
-          {supervision.level}
-        </Badge>
-        <div className="flex items-center gap-1">
-          {statusIcons[supervision.status]}
-          <Badge variant={(statusColors[supervision.status] || 'blue') as BadgeVariant}>
-            {statusLabels[supervision.status]}
-          </Badge>
+        {/* Header */}
+        <div className="flex items-start justify-between mb-3">
+          <span className="inline-block px-3 py-1 text-xs font-medium text-purple-700 bg-purple-50 rounded-full">
+            {getLevelLabel(supervision.level)}
+          </span>
+          <span className={`px-3 py-1 text-xs font-medium rounded-full ${getStatusColor(supervision.status)}`}>
+            {getStatusLabel(supervision.status)}
+          </span>
         </div>
-      </div>
 
-      <h3 className="text-xl font-bold text-gray-900 mb-2">{supervision.topic}</h3>
+        {/* Title */}
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
+          {supervision.topic}
+        </h3>
 
-      {supervision.description && (
-        <p className="text-sm text-gray-600 mb-4 line-clamp-2">{supervision.description}</p>
-      )}
-
-      <div className="space-y-2">
-        <div className="flex items-center text-sm text-gray-600">
-          <FaUser className="mr-2 text-gray-400" />
+        {/* Student */}
+        <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+          <FaUser className="w-4 h-4 text-gray-400" />
           <span className="font-medium">{supervision.studentName}</span>
         </div>
 
-        <div className="flex items-center text-sm text-gray-600">
-          <FaGraduationCap className="mr-2 text-gray-400" />
-          <span>{supervision.level}</span>
-        </div>
+        {/* Description */}
+        {supervision.description && (
+          <p className="text-sm text-gray-600 mb-4 line-clamp-2">{supervision.description}</p>
+        )}
 
-        <div className="flex items-center justify-between text-sm text-gray-600">
-          <div className="flex items-center">
-            <FaCalendar className="mr-2 text-gray-400" />
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100 text-sm text-gray-500">
+          <div className="flex items-center gap-1">
+            <FaCalendar className="w-4 h-4" />
             <span>{new Date(supervision.startDate).getFullYear()}</span>
+            {supervision.endDate && (
+              <span> - {new Date(supervision.endDate).getFullYear()}</span>
+            )}
           </div>
-          {supervision.endDate && (
-            <span className="text-gray-500">
-              → {new Date(supervision.endDate).getFullYear()}
-            </span>
-          )}
+          <span className="text-blue-600 font-medium">Voir détails →</span>
         </div>
-      </div>
-
-      {supervision.publications && supervision.publications.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">{supervision.publications.length}</span> publication(s) associée(s)
-          </p>
-        </div>
-      )}
       </div>
 
       {/* Admin Actions */}
-      {isAdmin && (onEdit || onDelete) && (
-        <div className="mt-4 pt-4 border-t border-gray-200 flex gap-2">
+      {isAdmin && (
+        <div className="px-6 pb-4 flex gap-2 border-t border-gray-100 pt-4">
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => navigate(`/supervisions/${supervision.id}`)}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/supervisions/${supervision.id}`);
+            }}
             className="flex-1"
           >
             <FaEye className="mr-1" />
@@ -120,7 +115,10 @@ export const SupervisionCard: React.FC<SupervisionCardProps> = ({
             <Button
               variant="secondary"
               size="sm"
-              onClick={onEdit}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
               className="flex-1"
             >
               <FaEdit className="mr-1" />
@@ -131,7 +129,10 @@ export const SupervisionCard: React.FC<SupervisionCardProps> = ({
             <Button
               variant="secondary"
               size="sm"
-              onClick={onDelete}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
               className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
             >
               <FaTrash className="mr-1" />
@@ -140,6 +141,6 @@ export const SupervisionCard: React.FC<SupervisionCardProps> = ({
           )}
         </div>
       )}
-    </Card>
+    </div>
   );
 };

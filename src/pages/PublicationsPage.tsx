@@ -3,8 +3,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../store';
 import { getAllPublications } from '../store/publications/actions';
 import { MainLayout } from '../layouts/MainLayout';
-import { FaBook, FaFileAlt, FaSearch, FaFilter, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaFileAlt, FaSearch, FaFilter } from 'react-icons/fa';
 import Spinner from '../components/ui/Spinner';
+import PublicationCard from '../components/PublicationCard';
 
 const publicationTypes = [
   { value: 'all', label: 'Tous les types' },
@@ -33,29 +34,6 @@ export const PublicationsPage: React.FC = () => {
     return matchesSearch && matchesType && pub.isPublished;
   });
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'article':
-        return <FaFileAlt className="text-blue-500" />;
-      case 'CONFERENCE':
-        return <FaBook className="text-purple-500" />;
-      case 'BOOK_CHAPTER':
-        return <FaBook className="text-green-500" />;
-      case 'THESIS':
-        return <FaFileAlt className="text-orange-500" />;
-      case 'PATENT':
-        return <FaFileAlt className="text-red-500" />;
-      case 'POSTER':
-        return <FaFileAlt className="text-pink-500" />;
-      default:
-        return <FaFileAlt className="text-gray-500" />;
-    }
-  };
-
-  const getTypeLabel = (type: string) => {
-    return publicationTypes.find(t => t.value === type)?.label || type;
-  };
-
   if (loading && publications.length === 0) {
     return (
       <MainLayout>
@@ -68,39 +46,38 @@ export const PublicationsPage: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12">
-        <div className="container mx-auto px-4">
-          {/* Header avec animation */}
-          <div className="text-center mb-12 animate-fade-in">
-            <h1 className="text-5xl font-bold mb-4 gradient-text">
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          {/* Header */}
+          <div className="mb-12">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
               Publications Scientifiques
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Découvrez mes contributions à la recherche scientifique dans les domaines de 
-              la Chimie-Physique, du Génie des Procédés et des procédés industriels.
+            <p className="text-lg text-gray-600 mb-6">
+              Contributions à la recherche scientifique en Chimie-Physique, Génie des Procédés et procédés industriels.
             </p>
-            <div className="flex justify-center gap-8 mt-8 text-center">
-              <div className="animate-scale-in animation-delay-100">
-                <div className="text-4xl font-bold text-blue-600">{publications.length}</div>
-                <div className="text-gray-600">Publications</div>
+            <div className="flex flex-wrap gap-6">
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{publications.length}</div>
+                <div className="text-sm text-gray-600">Publications</div>
               </div>
-              <div className="animate-scale-in animation-delay-200">
-                <div className="text-4xl font-bold text-purple-600">
+              <div>
+                <div className="text-2xl font-bold text-gray-900">
                   {publications.reduce((sum, pub) => sum + (pub.citations || 0), 0)}
                 </div>
-                <div className="text-gray-600">Citations</div>
+                <div className="text-sm text-gray-600">Citations</div>
               </div>
-              <div className="animate-scale-in animation-delay-300">
-                <div className="text-4xl font-bold text-green-600">
+              <div>
+                <div className="text-2xl font-bold text-gray-900">
                   {new Set(publications.map(p => p.year)).size}
                 </div>
-                <div className="text-gray-600">Années</div>
+                <div className="text-sm text-gray-600">Années</div>
               </div>
             </div>
           </div>
 
           {/* Filtres */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 animate-slide-up animation-delay-200">
+          <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Recherche */}
               <div className="relative">
@@ -131,65 +108,16 @@ export const PublicationsPage: React.FC = () => {
           </div>
 
           {/* Liste des publications */}
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPublications.length === 0 ? (
-              <div className="text-center py-16 animate-fade-in">
+              <div className="col-span-full text-center py-16">
                 <FaFileAlt className="text-6xl text-gray-300 mx-auto mb-4" />
                 <p className="text-xl text-gray-500">Aucune publication trouvée</p>
                 <p className="text-gray-400">Essayez de modifier vos critères de recherche</p>
               </div>
             ) : (
-              filteredPublications.map((pub, index) => (
-                <div
-                  key={pub.id}
-                  className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 animate-slide-up"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div className="flex items-start gap-4">
-                    {/* Icon */}
-                    <div className="flex-shrink-0 text-3xl mt-1">
-                      {getTypeIcon(pub.type)}
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-grow">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-grow">
-                          <h3 className="text-xl font-bold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
-                            {pub.title}
-                          </h3>
-                          <p className="text-gray-600 mb-2">{pub.authors}</p>
-                          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                            <span className="font-medium">{pub.year}</span>
-                            <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full font-medium">
-                              {getTypeLabel(pub.type)}
-                            </span>
-                            <span>{pub.journal}</span>
-                          </div>
-                        </div>
-
-                        {/* Citations */}
-                        <div className="text-center flex-shrink-0">
-                          <div className="text-2xl font-bold text-purple-600">{pub.citations}</div>
-                          <div className="text-xs text-gray-500">citations</div>
-                        </div>
-                      </div>
-
-                      {/* DOI Link */}
-                      <div className="mt-4 flex items-center gap-2">
-                        <a
-                          href={`https://doi.org/${pub.doi}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                        >
-                          <span className="text-sm">DOI: {pub.doi}</span>
-                          <FaExternalLinkAlt className="text-xs" />
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              filteredPublications.map((pub) => (
+                <PublicationCard key={pub.id} publication={pub} />
               ))
             )}
           </div>

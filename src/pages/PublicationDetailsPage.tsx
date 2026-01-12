@@ -1,24 +1,19 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { motion, AnimatePresence } from 'framer-motion';
 import type { AppDispatch, RootState } from '../store';
 import { getPublicationBySlug } from '../store/publications/actions';
 import { MainLayout } from '../layouts/MainLayout';
-import Button from '../components/ui/Button';
 import Spinner from '../components/ui/Spinner';
 import { API_BASE_URL } from '../config/api.config';
 import { 
   FaArrowLeft, 
   FaCalendar, 
   FaBook, 
-  FaFileAlt, 
-  FaQuoteLeft,
   FaExternalLinkAlt,
   FaFilePdf,
   FaTags,
   FaUsers,
-  FaUniversity,
   FaAward
 } from 'react-icons/fa';
 
@@ -44,379 +39,180 @@ export const PublicationDetailsPage: React.FC = () => {
     );
   }
 
-  const getTypeInfo = (type: string) => {
-    const info: Record<string, { label: string; gradient: string }> = {
-      ARTICLE: { 
-        label: 'Article de journal', 
-        gradient: 'from-blue-500 via-blue-600 to-indigo-600'
-      },
-      CONFERENCE: { 
-        label: 'Communication de conférence', 
-        gradient: 'from-purple-500 via-purple-600 to-pink-600'
-      },
-      BOOK: { 
-        label: 'Livre', 
-        gradient: 'from-green-500 via-emerald-600 to-teal-600'
-      },
-      CHAPTER: { 
-        label: 'Chapitre de livre', 
-        gradient: 'from-teal-500 via-cyan-600 to-blue-600'
-      },
-      THESIS: { 
-        label: 'Thèse', 
-        gradient: 'from-red-500 via-rose-600 to-pink-600'
-      },
-      PATENT: { 
-        label: 'Brevet', 
-        gradient: 'from-orange-500 via-amber-600 to-yellow-600'
-      },
-      REPORT: { 
-        label: 'Rapport technique', 
-        gradient: 'from-yellow-500 via-orange-600 to-red-600'
-      },
-      OTHER: { 
-        label: 'Autre', 
-        gradient: 'from-gray-500 via-gray-600 to-slate-600'
-      },
+  const getTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      ARTICLE: 'Article de journal',
+      CONFERENCE: 'Communication de conférence',
+      BOOK: 'Livre',
+      CHAPTER: 'Chapitre de livre',
+      THESIS: 'Thèse',
+      PATENT: 'Brevet',
+      REPORT: 'Rapport technique',
+      OTHER: 'Autre',
     };
-    return info[type] || info.OTHER;
+    return labels[type] || 'Publication';
   };
-
-  const typeInfo = getTypeInfo(currentPublication.type);
 
   return (
     <MainLayout>
-      <AnimatePresence>
-        <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 py-8 sm:py-12">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Bouton retour */}
-          <motion.div
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.3 }}
+          <button
+            onClick={() => navigate('/publications')}
+            className="group flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8 transition-colors"
           >
-            <Button
-              variant="secondary"
-              onClick={() => navigate('/publications')}
-              className="mb-6"
-            >
-              <FaArrowLeft className="mr-2" />
-              Retour aux publications
-            </Button>
-          </motion.div>
+            <FaArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-medium">Retour aux publications</span>
+          </button>
 
-          {/* En-tête avec gradient */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className={`relative bg-gradient-to-br ${typeInfo.gradient} rounded-3xl p-[2px] shadow-2xl mb-8`}
-          >
-            <div className="bg-white rounded-3xl p-8">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  {/* Badge type animé */}
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r ${typeInfo.gradient} text-white text-sm font-semibold shadow-lg mb-4`}
-                  >
-                    <FaFileAlt />
-                    <span>{typeInfo.label}</span>
-                  </motion.div>
-                  
-                  {/* Titre avec gradient */}
-                  <h1 className={`text-4xl font-bold mb-6 bg-gradient-to-r ${typeInfo.gradient} bg-clip-text text-transparent`}>
-                    {currentPublication.title}
-                  </h1>
-                  
-                  {/* Auteurs */}
-                  <motion.div 
-                    className="flex items-start gap-3 mb-4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    <FaUsers className="mt-1 text-blue-500 text-xl flex-shrink-0" />
-                    <div>
-                      <span className="font-semibold text-gray-700 text-lg">Auteurs: </span>
-                      <span className="text-gray-600">{currentPublication.authors.join(', ')}</span>
-                    </div>
-                  </motion.div>
-
-                  {/* Année avec badge circulaire */}
-                  <motion.div 
-                    className="flex items-center gap-3"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <FaCalendar className="text-orange-500 text-xl" />
-                    <div className={`px-4 py-2 rounded-full bg-gradient-to-r ${typeInfo.gradient} text-white font-bold shadow-md`}>
-                      {currentPublication.year}
-                    </div>
-                  </motion.div>
-                </div>
+          <article className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/50 overflow-hidden">
+            {/* Header */}
+            <header className="p-8 sm:p-10 pb-8 border-b border-gray-200/60">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="px-4 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 rounded-full shadow-sm border border-blue-100">
+                  {getTypeLabel(currentPublication.type)}
+                </span>
+                <span className="flex items-center gap-2 text-sm text-gray-500">
+                  <FaCalendar className="w-4 h-4" />
+                  <span className="font-medium">{currentPublication.year}</span>
+                </span>
               </div>
-            </div>
 
-            {/* Élément décoratif */}
-            <motion.div
-              className={`absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br ${typeInfo.gradient} rounded-full opacity-20 blur-2xl`}
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 3, repeat: Infinity }}
-            />
-          </motion.div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight break-words">
+                {currentPublication.title}
+              </h1>
 
-          {/* Résumé */}
-          {currentPublication.abstract && (
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="relative bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 rounded-3xl p-[2px] shadow-xl mb-8"
-            >
-              <div className="bg-white rounded-3xl p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <motion.div
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.5 }}
-                    className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg"
-                  >
-                    <FaQuoteLeft className="text-xl" />
-                  </motion.div>
-                  <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">
-                    Résumé
-                  </h2>
-                </div>
-                <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-line">
+              <div className="flex items-start gap-3 text-gray-600">
+                <FaUsers className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                <span className="text-base leading-relaxed break-words">{currentPublication.authors.join(', ')}</span>
+              </div>
+            </header>
+
+            {/* Résumé */}
+            {currentPublication.abstract && (
+              <section className="p-8 sm:p-10 border-b border-gray-200/60">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Résumé</h2>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line break-words text-base sm:text-lg">
                   {currentPublication.abstract}
                 </p>
-              </div>
-            </motion.div>
-          )}
+              </section>
+            )}
 
-          {/* Détails de publication */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="relative bg-gradient-to-br from-purple-500 via-purple-600 to-pink-600 rounded-3xl p-[2px] shadow-xl mb-8"
-          >
-            <div className="bg-white rounded-3xl p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <motion.div
-                  whileHover={{ rotate: 360 }}
-                  transition={{ duration: 0.5 }}
-                  className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white shadow-lg"
-                >
-                  <FaBook className="text-xl" />
-                </motion.div>
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-600 bg-clip-text text-transparent">
-                  Détails de publication
-                </h2>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {currentPublication.journal && (
-                  <motion.div 
-                    className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors"
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <FaUniversity className="text-blue-500 text-2xl mt-1" />
-                    <div>
-                      <span className="font-semibold text-gray-700 block mb-1">Journal</span>
-                      <span className="text-gray-600">{currentPublication.journal}</span>
-                    </div>
-                  </motion.div>
-                )}
+            {/* Détails de publication */}
+            <section className="p-8 sm:p-10 border-b border-gray-200/60">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Détails de publication</h2>
+              <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              {currentPublication.journal && (
+                <div className="flex flex-col">
+                  <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Journal</dt>
+                  <dd className="text-gray-900 font-medium break-words">{currentPublication.journal}</dd>
+                </div>
+              )}
 
-                {currentPublication.conference && (
-                  <motion.div 
-                    className="flex items-start gap-3 p-4 rounded-xl bg-purple-50 hover:bg-purple-100 transition-colors"
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <FaUniversity className="text-purple-500 text-2xl mt-1" />
-                    <div>
-                      <span className="font-semibold text-gray-700 block mb-1">Conférence</span>
-                      <span className="text-gray-600">{currentPublication.conference}</span>
-                    </div>
-                  </motion.div>
-                )}
+              {currentPublication.conference && (
+                <div className="flex flex-col">
+                  <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Conférence</dt>
+                  <dd className="text-gray-900 font-medium break-words">{currentPublication.conference}</dd>
+                </div>
+              )}
 
-                {currentPublication.publisher && (
-                  <motion.div 
-                    className="flex items-start gap-3 p-4 rounded-xl bg-green-50 hover:bg-green-100 transition-colors"
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <FaBook className="text-green-500 text-2xl mt-1" />
-                    <div>
-                      <span className="font-semibold text-gray-700 block mb-1">Éditeur</span>
-                      <span className="text-gray-600">{currentPublication.publisher}</span>
-                    </div>
-                  </motion.div>
-                )}
+              {currentPublication.publisher && (
+                <div className="flex flex-col">
+                  <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Éditeur</dt>
+                  <dd className="text-gray-900 font-medium break-words">{currentPublication.publisher}</dd>
+                </div>
+              )}
 
-                {(currentPublication.volume || currentPublication.issue || currentPublication.pages) && (
-                  <motion.div 
-                    className="flex items-start gap-3 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <FaFileAlt className="text-gray-500 text-2xl mt-1" />
-                    <div>
-                      <span className="font-semibold text-gray-700 block mb-1">Publication</span>
-                      <div className="text-gray-600">
-                        {currentPublication.volume && <span>Vol. {currentPublication.volume}</span>}
-                        {currentPublication.issue && <span>, No. {currentPublication.issue}</span>}
-                        {currentPublication.pages && <span>, pp. {currentPublication.pages}</span>}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
+              {(currentPublication.volume || currentPublication.issue || currentPublication.pages) && (
+                <div className="flex flex-col">
+                  <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Publication</dt>
+                  <dd className="text-gray-900 font-medium">
+                    {currentPublication.volume && `Vol. ${currentPublication.volume}`}
+                    {currentPublication.issue && `, No. ${currentPublication.issue}`}
+                    {currentPublication.pages && `, pp. ${currentPublication.pages}`}
+                  </dd>
+                </div>
+              )}
 
-                {currentPublication.doi && (
-                  <motion.div 
-                    className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors"
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <FaExternalLinkAlt className="text-blue-500 text-2xl mt-1" />
-                    <div>
-                      <span className="font-semibold text-gray-700 block mb-1">DOI</span>
-                      <a 
-                        href={`https://doi.org/${currentPublication.doi}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 underline font-medium"
-                      >
-                        {currentPublication.doi}
-                      </a>
-                    </div>
-                  </motion.div>
-                )}
+              {currentPublication.doi && (
+                <div className="flex flex-col">
+                  <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">DOI</dt>
+                  <dd>
+                    <a 
+                      href={`https://doi.org/${currentPublication.doi}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2 break-all group"
+                    >
+                      <span>{currentPublication.doi}</span>
+                      <FaExternalLinkAlt className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                    </a>
+                  </dd>
+                </div>
+              )}
 
-                {currentPublication.isbn && (
-                  <motion.div 
-                    className="flex items-start gap-3 p-4 rounded-xl bg-teal-50 hover:bg-teal-100 transition-colors"
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <FaBook className="text-teal-500 text-2xl mt-1" />
-                    <div>
-                      <span className="font-semibold text-gray-700 block mb-1">ISBN</span>
-                      <span className="text-gray-600">{currentPublication.isbn}</span>
-                    </div>
-                  </motion.div>
-                )}
+              {currentPublication.isbn && (
+                <div className="flex flex-col">
+                  <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">ISBN</dt>
+                  <dd className="text-gray-900 font-medium font-mono text-sm">{currentPublication.isbn}</dd>
+                </div>
+              )}
 
-                {currentPublication.issn && (
-                  <motion.div 
-                    className="flex items-start gap-3 p-4 rounded-xl bg-cyan-50 hover:bg-cyan-100 transition-colors"
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <FaBook className="text-cyan-500 text-2xl mt-1" />
-                    <div>
-                      <span className="font-semibold text-gray-700 block mb-1">ISSN</span>
-                      <span className="text-gray-600">{currentPublication.issn}</span>
-                    </div>
-                  </motion.div>
-                )}
+              {currentPublication.issn && (
+                <div className="flex flex-col">
+                  <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">ISSN</dt>
+                  <dd className="text-gray-900 font-medium font-mono text-sm">{currentPublication.issn}</dd>
+                </div>
+              )}
 
-                {currentPublication.citations > 0 && (
-                  <motion.div 
-                    className="flex items-start gap-3 p-4 rounded-xl bg-orange-50 hover:bg-orange-100 transition-colors"
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <FaAward className="text-orange-500 text-2xl mt-1" />
-                    <div>
-                      <span className="font-semibold text-gray-700 block mb-1">Citations</span>
-                      <span className="text-gray-600 font-bold text-xl">{currentPublication.citations}</span>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-            </div>
-          </motion.div>
+              {currentPublication.citations > 0 && (
+                <div className="flex flex-col">
+                  <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Citations</dt>
+                  <dd className="flex items-center gap-2">
+                    <FaAward className="w-5 h-5 text-orange-500" />
+                    <span className="text-gray-900 font-bold text-lg">{currentPublication.citations}</span>
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </section>
 
           {/* Mots-clés */}
           {currentPublication.keywords && currentPublication.keywords.length > 0 && (
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="relative bg-gradient-to-br from-green-500 via-emerald-600 to-teal-600 rounded-3xl p-[2px] shadow-xl mb-8"
-            >
-              <div className="bg-white rounded-3xl p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <motion.div
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.5 }}
-                    className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-white shadow-lg"
+            <section className="p-8 sm:p-10 border-b border-gray-200/60">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Mots-clés</h2>
+              <div className="flex flex-wrap gap-2">
+                {currentPublication.keywords.map((keyword, index) => (
+                  <span 
+                    key={index}
+                    className="px-4 py-2 bg-gray-50/80 text-gray-700 rounded-xl text-sm font-medium border border-gray-200/60 hover:border-gray-300 hover:bg-gray-100/80 transition-all duration-300"
                   >
-                    <FaTags className="text-xl" />
-                  </motion.div>
-                  <h2 className="text-3xl font-bold bg-gradient-to-r from-green-500 to-teal-600 bg-clip-text text-transparent">
-                    Mots-clés
-                  </h2>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {currentPublication.keywords.map((keyword, index) => (
-                    <motion.span 
-                      key={index}
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.5 + index * 0.05 }}
-                      whileHover={{ scale: 1.1, rotate: 3 }}
-                      className="px-4 py-2 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-full text-sm font-semibold shadow-md"
-                    >
-                      {keyword}
-                    </motion.span>
-                  ))}
-                </div>
+                    {keyword}
+                  </span>
+                ))}
               </div>
-            </motion.div>
+            </section>
           )}
 
           {/* PDF */}
           {currentPublication.pdfUrl && (
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="relative bg-gradient-to-br from-red-500 via-rose-600 to-pink-600 rounded-3xl p-[2px] shadow-xl"
-            >
-              <div className="bg-white rounded-3xl p-8">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <motion.div
-                      whileHover={{ rotate: 360 }}
-                      transition={{ duration: 0.5 }}
-                      className="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center text-white shadow-lg"
-                    >
-                      <FaFilePdf className="text-3xl" />
-                    </motion.div>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900">Document PDF disponible</h3>
-                      <p className="text-gray-600">Téléchargez la version complète</p>
-                    </div>
-                  </div>
-                  <a
-                    href={`${API_BASE_URL}${currentPublication.pdfUrl}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Button variant="primary" className="bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg">
-                        <FaFilePdf className="mr-2" />
-                        Télécharger le PDF
-                      </Button>
-                    </motion.div>
-                  </a>
-                </div>
-              </div>
-            </motion.div>
+            <section className="p-8 sm:p-10">
+              <a
+                href={`${API_BASE_URL}${currentPublication.pdfUrl}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg"
+              >
+                <FaFilePdf className="w-6 h-6" />
+                <span className="font-semibold text-lg">Télécharger le PDF</span>
+                <FaExternalLinkAlt className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </a>
+            </section>
           )}
-        </div>
-      </AnimatePresence>
+        </article>
+      </div>
+      </div>
     </MainLayout>
   );
 };
