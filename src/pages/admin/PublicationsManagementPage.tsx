@@ -58,14 +58,23 @@ export const PublicationsManagementPage: React.FC = () => {
     
     setIsDeleting(true);
     try {
-      await dispatch(deletePublication(deleteConfirm.publication.id));
+      const deleteResult = await dispatch(deletePublication(deleteConfirm.publication.id));
+      
+      if (deleteResult.type.endsWith('/rejected')) {
+        throw new Error(deleteResult.payload as string || 'Erreur de suppression');
+      }
+      
+      const reloadResult = await dispatch(getAllPublications({}));
+      if (reloadResult.type.endsWith('/rejected')) {
+        throw new Error('Erreur lors du rechargement');
+      }
+      
       showToast('Publication supprimée avec succès', 'success');
-      dispatch(getAllPublications({}));
-    } catch (error) {
-      showToast('Erreur lors de la suppression', 'error');
+      setDeleteConfirm({ isOpen: false, publication: null });
+    } catch (error: any) {
+      showToast(error.message || 'Erreur lors de la suppression', 'error');
     } finally {
       setIsDeleting(false);
-      setDeleteConfirm({ isOpen: false, publication: null });
     }
   };
 

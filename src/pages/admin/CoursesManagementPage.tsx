@@ -58,14 +58,23 @@ export const CoursesManagementPage: React.FC = () => {
     
     setIsDeleting(true);
     try {
-      await dispatch(deleteCourse(deleteConfirm.course.id));
+      const deleteResult = await dispatch(deleteCourse(deleteConfirm.course.id));
+      
+      if (deleteResult.type.endsWith('/rejected')) {
+        throw new Error(deleteResult.payload as string || 'Erreur de suppression');
+      }
+      
+      const reloadResult = await dispatch(getAllCourses({}));
+      if (reloadResult.type.endsWith('/rejected')) {
+        throw new Error('Erreur lors du rechargement');
+      }
+      
       showToast('Cours supprimé avec succès', 'success');
-      dispatch(getAllCourses({}));
-    } catch (error) {
-      showToast('Erreur lors de la suppression', 'error');
+      setDeleteConfirm({ isOpen: false, course: null });
+    } catch (error: any) {
+      showToast(error.message || 'Erreur lors de la suppression', 'error');
     } finally {
       setIsDeleting(false);
-      setDeleteConfirm({ isOpen: false, course: null });
     }
   };
 

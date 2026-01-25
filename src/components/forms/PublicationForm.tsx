@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import * as yup from 'yup';
 import type { AppDispatch } from '../../store';
 import { createPublication, updatePublication } from '../../store/publications/actions';
 import Input from '../ui/Input';
@@ -15,10 +16,33 @@ interface PublicationFormProps {
   onSuccess?: () => void;
 }
 
+// Schéma de validation - SYNC AVEC BACKEND
+const publicationValidationSchema = yup.object().shape({
+  title: yup.string().optional().nullable().min(5, 'Le titre doit avoir au moins 5 caractères'),
+  abstract: yup.string().optional().nullable().min(10, 'Le résumé doit avoir au moins 10 caractères'),
+  authors: yup.array().of(yup.string()).optional().nullable(),
+  journal: yup.string().optional().nullable(),
+  conference: yup.string().optional().nullable(),
+  publicationDate: yup.string().optional().nullable(),
+  year: yup.number().optional().nullable().integer().positive(),
+  volume: yup.string().optional().nullable(),
+  issue: yup.string().optional().nullable(),
+  pages: yup.string().optional().nullable(),
+  publisher: yup.string().optional().nullable(),
+  doi: yup.string().optional().nullable(),
+  isbn: yup.string().optional().nullable(),
+  issn: yup.string().optional().nullable(),
+  type: yup.string().oneOf(['ARTICLE', 'CONFERENCE', 'BOOK_CHAPTER', 'THESIS', 'PATENT', 'POSTER']).optional().nullable(),
+  keywords: yup.array().of(yup.string()).optional().nullable(),
+  citations: yup.number().optional().nullable().integer().min(0),
+  isPublished: yup.boolean().optional(),
+});
+
 export const PublicationForm: React.FC<PublicationFormProps> = ({ publication, onClose, onSuccess }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [loading, setLoading] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   
   const [formData, setFormData] = useState({
     title: publication?.title || '',
@@ -26,7 +50,7 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({ publication, o
     authors: publication?.authors.join(', ') || '',
     journal: publication?.journal || '',
     conference: publication?.conference || '',
-    publicationDate: publication?.publicationDate.split('T')[0] || new Date().toISOString().split('T')[0],
+    publicationDate: publication?.publicationDate?.split('T')[0] || '',  // ← VIDE PAR DÉFAUT
     year: publication?.year || new Date().getFullYear(),
     volume: publication?.volume || '',
     issue: publication?.issue || '',
@@ -43,6 +67,10 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({ publication, o
 
   const handleChange = (field: string, value: any) => {
     setFormData({ ...formData, [field]: value });
+    // Effacer l'erreur du champ quand l'utilisateur tape
+    if (validationErrors[field]) {
+      setValidationErrors({ ...validationErrors, [field]: '' });
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,22 +79,30 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({ publication, o
     }
   };
 
+  const handleSetDateUnknown = () => {
+    handleChange('publicationDate', 'unknown');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setValidationErrors({});
 
     try {
       const data: any = {
         ...formData,
         authors: formData.authors.split(',').map((a: string) => a.trim()).filter(Boolean),
         keywords: formData.keywords.split(',').map((k: string) => k.trim()).filter(Boolean),
-        year: parseInt(formData.year.toString()),
-        citations: parseInt(formData.citations.toString()),
+        year: formData.year ? parseInt(formData.year.toString()) : null,
+        citations: formData.citations ? parseInt(formData.citations.toString()) : 0,
       };
 
       if (pdfFile) {
         data.pdf = pdfFile;
       }
+
+      // Validation Yup
+      await publicationValidationSchema.validate(data, { abortEarly: false });
 
       if (publication) {
         await dispatch(updatePublication({ id: publication.id, data }));
@@ -76,8 +112,16 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({ publication, o
 
       onSuccess?.();
       onClose();
-    } catch (error) {
-      // Error already handled by toast
+    } catch (error: any) {
+      if (error instanceof yup.ValidationError) {
+        // Afficher les erreurs de validation
+        const errors = error.inner.reduce((acc, err) => ({
+          ...acc,
+          [err.path || 'general']: err.message,
+        }), {});
+        setValidationErrors(errors);
+      }
+      // Les erreurs API sont déjà gérées par toast
     } finally {
       setLoading(false);
     }
@@ -85,25 +129,41 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({ publication, o
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+      {/* Erreurs globales */}
+      {Object.keys(validationErrors).length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800 font-medium text-sm mb-2">Erreurs de validation:</p>
+          <ul className="text-red-700 text-sm space-y-1">
+            {Object.entries(validationErrors)
+              .filter(([_, msg]) => msg)
+              .map(([field, msg]) => (
+                <li key={field}>• {msg}</li>
+              ))}
+          </ul>
+        </div>
+      )}
+
       {/* Titre */}
       <div>
         <Input
-          label="Titre *"
+          label="Titre"
           value={formData.title}
           onChange={(e) => handleChange('title', e.target.value)}
           icon={<FaBook />}
-          required
           placeholder="Titre de la publication"
+          error={validationErrors.title}
         />
+        {formData.title && (
+          <p className="text-gray-600 text-xs mt-1">{formData.title.length}/5 caractères minimum</p>
+        )}
       </div>
 
       {/* Type */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Type de publication *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Type de publication</label>
         <Select
           value={formData.type}
           onChange={(e) => handleChange('type', e.target.value)}
-          required
           options={[
             { value: 'ARTICLE', label: 'Article de journal' },
             { value: 'CONFERENCE', label: 'Conférence' },
@@ -113,34 +173,50 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({ publication, o
             { value: 'POSTER', label: 'Poster' },
           ]}
         />
+        {validationErrors.type && (
+          <p className="text-red-600 text-xs mt-1">{validationErrors.type}</p>
+        )}
       </div>
 
       {/* Auteurs */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Auteurs * <span className="text-xs text-gray-500">(séparés par des virgules)</span>
+          Auteurs <span className="text-xs text-gray-500">(séparés par des virgules)</span>
         </label>
         <textarea
           value={formData.authors}
           onChange={(e) => handleChange('authors', e.target.value)}
           rows={2}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${
+            validationErrors.authors ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+          }`}
           placeholder="Nom Auteur1, Nom Auteur2, ..."
-          required
         />
+        {validationErrors.authors && (
+          <p className="text-red-600 text-xs mt-1">{validationErrors.authors}</p>
+        )}
       </div>
 
       {/* Résumé */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Résumé *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Résumé <span className="text-xs text-gray-500">(min. 20 caractères)</span>
+        </label>
         <textarea
           value={formData.abstract}
           onChange={(e) => handleChange('abstract', e.target.value)}
           rows={4}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${
+            validationErrors.abstract ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+          }`}
           placeholder="Résumé de la publication..."
-          required
         />
+        <div className="flex justify-between items-center mt-1">
+          <p className="text-gray-600 text-xs">{formData.abstract.length}/20 caractères</p>
+          {validationErrors.abstract && (
+            <p className="text-red-600 text-xs">{validationErrors.abstract}</p>
+          )}
+        </div>
       </div>
 
       {/* Journal/Conférence */}
@@ -149,56 +225,77 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({ publication, o
           label="Journal"
           value={formData.journal}
           onChange={(e) => handleChange('journal', e.target.value)}
-          placeholder="Nom du journal"
+          placeholder="Ex: Nature"
+          error={validationErrors.journal}
         />
         <Input
           label="Conférence"
           value={formData.conference}
           onChange={(e) => handleChange('conference', e.target.value)}
-          placeholder="Nom de la conférence"
+          placeholder="Ex: ICML 2024"
+          error={validationErrors.conference}
         />
       </div>
 
-      {/* Année et Date */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Date de publication */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         <Input
-          label="Année *"
+          type="date"
+          label="Date de publication"
+          value={formData.publicationDate}
+          onChange={(e) => handleChange('publicationDate', e.target.value)}
+          icon={<FaCalendar />}
+          placeholder="YYYY-MM-DD"
+          error={validationErrors.publicationDate}
+        />
+        <div className="flex items-end">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={handleSetDateUnknown}
+            fullWidth
+          >
+            Date inconnue
+          </Button>
+        </div>
+      </div>
+
+      {/* Année et Volume */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Input
+          label="Année"
           type="number"
           value={formData.year}
           onChange={(e) => handleChange('year', e.target.value)}
-          icon={<FaCalendar />}
-          required
           min={1900}
           max={2100}
+          error={validationErrors.year}
         />
-        <Input
-          label="Date de publication *"
-          type="date"
-          value={formData.publicationDate}
-          onChange={(e) => handleChange('publicationDate', e.target.value)}
-          required
-        />
-      </div>
-
-      {/* Volume, Issue, Pages */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Input
           label="Volume"
           value={formData.volume}
           onChange={(e) => handleChange('volume', e.target.value)}
-          placeholder="Vol. X"
+          placeholder="Ex: 32"
+          error={validationErrors.volume}
         />
         <Input
           label="Numéro"
           value={formData.issue}
           onChange={(e) => handleChange('issue', e.target.value)}
-          placeholder="No. X"
+          placeholder="Ex: 5"
+          error={validationErrors.issue}
         />
+      </div>
+
+      {/* Pages */}
+      <div>
         <Input
           label="Pages"
           value={formData.pages}
           onChange={(e) => handleChange('pages', e.target.value)}
-          placeholder="1-10"
+          placeholder="Ex: 123-145"
+          error={validationErrors.pages}
         />
       </div>
 
@@ -208,7 +305,8 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({ publication, o
           label="Éditeur"
           value={formData.publisher}
           onChange={(e) => handleChange('publisher', e.target.value)}
-          placeholder="Nom de l'éditeur"
+          placeholder="Ex: Springer"
+          error={validationErrors.publisher}
         />
       </div>
 
@@ -218,19 +316,23 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({ publication, o
           label="DOI"
           value={formData.doi}
           onChange={(e) => handleChange('doi', e.target.value)}
-          placeholder="10.xxxx/xxxxx"
+          icon={<FaHashtag />}
+          placeholder="Ex: 10.1234/..."
+          error={validationErrors.doi}
         />
         <Input
           label="ISBN"
           value={formData.isbn}
           onChange={(e) => handleChange('isbn', e.target.value)}
-          placeholder="978-xxx-xxx"
+          placeholder="Ex: 978-3-..."
+          error={validationErrors.isbn}
         />
         <Input
           label="ISSN"
           value={formData.issn}
           onChange={(e) => handleChange('issn', e.target.value)}
-          placeholder="xxxx-xxxx"
+          placeholder="Ex: 1234-5678"
+          error={validationErrors.issn}
         />
       </div>
 
@@ -239,42 +341,42 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({ publication, o
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Mots-clés <span className="text-xs text-gray-500">(séparés par des virgules)</span>
         </label>
-        <Input
+        <textarea
           value={formData.keywords}
           onChange={(e) => handleChange('keywords', e.target.value)}
-          icon={<FaHashtag />}
-          placeholder="mot-clé1, mot-clé2, ..."
+          rows={2}
+          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${
+            validationErrors.keywords ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+          }`}
+          placeholder="machine learning, deep learning, ..."
         />
+        {validationErrors.keywords && (
+          <p className="text-red-600 text-xs mt-1">{validationErrors.keywords}</p>
+        )}
       </div>
 
-      {/* Citations */}
-      <div>
+      {/* Citations et PDF */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
           label="Nombre de citations"
           type="number"
           value={formData.citations}
           onChange={(e) => handleChange('citations', e.target.value)}
           min={0}
+          error={validationErrors.citations}
         />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Fichier PDF</label>
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={handleFileChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
       </div>
 
-      {/* PDF */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Fichier PDF
-        </label>
-        <input
-          type="file"
-          accept=".pdf"
-          onChange={handleFileChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-        />
-        {publication?.pdfUrl && (
-          <p className="text-xs text-gray-500 mt-1">Fichier actuel: {publication.pdfUrl}</p>
-        )}
-      </div>
-
-      {/* Statut publication */}
+      {/* Statut publié */}
       <div className="flex items-center gap-2">
         <input
           type="checkbox"
@@ -284,7 +386,7 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({ publication, o
           className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
         />
         <label htmlFor="isPublished" className="text-sm font-medium text-gray-700">
-          Publication publique (visible sur le site)
+          Publication publiée
         </label>
       </div>
 
@@ -304,7 +406,6 @@ export const PublicationForm: React.FC<PublicationFormProps> = ({ publication, o
           variant="primary"
           disabled={loading}
           fullWidth
-          className="bg-blue-600 hover:bg-blue-700"
         >
           {loading ? <Spinner size="sm" /> : (publication ? 'Mettre à jour' : 'Créer')}
         </Button>

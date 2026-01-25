@@ -78,6 +78,34 @@ export const createPublication = createAsyncThunk(
   'publications/create',
   async (data: PublicationFormData, { rejectWithValue }) => {
     try {
+      // Si pas de PDF, envoyer JSON simple
+      if (!data.pdf) {
+        const payload: any = {
+          title: data.title,
+          abstract: data.abstract,
+          authors: data.authors,
+          journal: data.journal,
+          conference: data.conference,
+          publicationDate: data.publicationDate,
+          year: data.year,
+          volume: data.volume,
+          issue: data.issue,
+          pages: data.pages,
+          publisher: data.publisher,
+          doi: data.doi,
+          isbn: data.isbn,
+          issn: data.issn,
+          type: data.type,
+          keywords: data.keywords,
+          citations: data.citations,
+          isPublished: data.isPublished,
+        };
+        const response = await api.post('/publications', payload);
+        toast.success('Publication créée avec succès');
+        return response.data.data;
+      }
+
+      // Si PDF, utiliser FormData
       const formData = new FormData();
       
       // Ajouter les champs texte
@@ -111,6 +139,34 @@ export const updatePublication = createAsyncThunk(
   'publications/update',
   async ({ id, data }: { id: string; data: Partial<PublicationFormData> }, { rejectWithValue }) => {
     try {
+      // Si pas de PDF, envoyer JSON simple
+      if (!data.pdf) {
+        const payload: any = {
+          title: data.title,
+          abstract: data.abstract,
+          authors: data.authors,
+          journal: data.journal,
+          conference: data.conference,
+          publicationDate: data.publicationDate,
+          year: data.year,
+          volume: data.volume,
+          issue: data.issue,
+          pages: data.pages,
+          publisher: data.publisher,
+          doi: data.doi,
+          isbn: data.isbn,
+          issn: data.issn,
+          type: data.type,
+          keywords: data.keywords,
+          citations: data.citations,
+          isPublished: data.isPublished,
+        };
+        const response = await api.put(`/publications/${id}`, payload);
+        toast.success('Publication mise à jour');
+        return response.data.data;
+      }
+
+      // Si PDF, utiliser FormData
       const formData = new FormData();
       
       Object.keys(data).forEach((key) => {

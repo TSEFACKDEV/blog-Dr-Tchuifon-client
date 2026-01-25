@@ -43,11 +43,21 @@ export const CollaboratorsManagementPage: React.FC = () => {
     if (!deleteConfirm.collaborator) return;
     setIsDeleting(true);
     try {
-      await dispatch(deleteCollaborator(deleteConfirm.collaborator.id));
+      const deleteResult = await dispatch(deleteCollaborator(deleteConfirm.collaborator.id));
+      
+      if (deleteResult.type.endsWith('/rejected')) {
+        throw new Error(deleteResult.payload as string || 'Erreur de suppression');
+      }
+      
+      const reloadResult = await dispatch(getAllCollaborators({}));
+      if (reloadResult.type.endsWith('/rejected')) {
+        throw new Error('Erreur lors du rechargement');
+      }
+      
       showToast('Collaborateur supprimé avec succès', 'success');
       setDeleteConfirm({ isOpen: false, collaborator: null });
-    } catch (error) {
-      showToast('Erreur lors de la suppression', 'error');
+    } catch (error: any) {
+      showToast(error.message || 'Erreur lors de la suppression', 'error');
     } finally {
       setIsDeleting(false);
     }

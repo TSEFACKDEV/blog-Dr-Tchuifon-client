@@ -54,6 +54,25 @@ export const createSupervision = createAsyncThunk(
   'supervisions/create',
   async (data: SupervisionFormData, { rejectWithValue }) => {
     try {
+      // Si pas de fichier, envoyer JSON simple
+      if (!data.thesis) {
+        const payload = {
+          studentName: data.studentName,
+          level: data.level,
+          topic: data.topic,
+          description: data.description,
+          startDate: data.startDate,
+          endDate: data.endDate,
+          status: data.status,
+          thesisUrl: data.thesisUrl,
+          publications: data.publications,
+        };
+        const response = await api.post('/supervisions', payload);
+        toast.success('Encadrement créé avec succès');
+        return response.data.data;
+      }
+
+      // Si fichier, utiliser FormData
       const formData = new FormData();
       
       // Ajouter les champs texte
@@ -87,6 +106,25 @@ export const updateSupervision = createAsyncThunk(
   'supervisions/update',
   async ({ id, data }: { id: string; data: Partial<SupervisionFormData> }, { rejectWithValue }) => {
     try {
+      // Si pas de fichier, envoyer JSON simple
+      if (!data.thesis) {
+        const payload: any = {
+          studentName: data.studentName,
+          level: data.level,
+          topic: data.topic,
+          description: data.description,
+          startDate: data.startDate,
+          endDate: data.endDate,
+          status: data.status,
+          thesisUrl: data.thesisUrl,
+          publications: data.publications,
+        };
+        const response = await api.put(`/supervisions/${id}`, payload);
+        toast.success('Encadrement mis à jour');
+        return response.data.data;
+      }
+
+      // Si fichier, utiliser FormData
       const formData = new FormData();
       
       // Ajouter les champs texte

@@ -60,14 +60,23 @@ export const SupervisionsManagementPage: React.FC = () => {
     
     setIsDeleting(true);
     try {
-      await dispatch(deleteSupervision(deleteConfirm.supervision.id));
+      const deleteResult = await dispatch(deleteSupervision(deleteConfirm.supervision.id));
+      
+      if (deleteResult.type.endsWith('/rejected')) {
+        throw new Error(deleteResult.payload as string || 'Erreur de suppression');
+      }
+      
+      const reloadResult = await dispatch(getAllSupervisions({}));
+      if (reloadResult.type.endsWith('/rejected')) {
+        throw new Error('Erreur lors du rechargement');
+      }
+      
       showToast('Encadrement supprimé avec succès', 'success');
-      dispatch(getAllSupervisions({}));
-    } catch (error) {
-      showToast('Erreur lors de la suppression', 'error');
+      setDeleteConfirm({ isOpen: false, supervision: null });
+    } catch (error: any) {
+      showToast(error.message || 'Erreur lors de la suppression', 'error');
     } finally {
       setIsDeleting(false);
-      setDeleteConfirm({ isOpen: false, supervision: null });
     }
   };
 

@@ -14,17 +14,26 @@ export const LoginPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { isAuthenticated, loading, error } = useSelector((state: RootState) => state.auth);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
 
+  // Redirection au montage si déjà authentifié
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/admin');
+      navigate('/admin', { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, []);
+
+  // Redirection après succès de connexion
+  useEffect(() => {
+    if (isAuthenticated && !loading && !isSubmitting) {
+      navigate('/admin', { replace: true });
+    }
+  }, [isAuthenticated, loading, isSubmitting, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,7 +41,19 @@ export const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await dispatch(login(formData));
+    setIsSubmitting(true);
+    try {
+      const result = await dispatch(login(formData));
+      // Vérifier si la connexion a réussi
+      if (result.type === 'auth/login/fulfilled') {
+        setFormData({ email: '', password: '' });
+        // La redirection se fera via le useEffect ci-dessus
+      }
+    } catch (err) {
+      console.error('Erreur lors de la connexion:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -78,6 +99,7 @@ export const LoginPage: React.FC = () => {
             name="email"
             value={formData.email}
             onChange={handleChange}
+            disabled={isSubmitting || loading}
             required
             icon={<FaEnvelope />}
             placeholder="votre@email.com"
@@ -90,6 +112,7 @@ export const LoginPage: React.FC = () => {
             name="password"
             value={formData.password}
             onChange={handleChange}
+            disabled={isSubmitting || loading}
             required
             icon={<FaLock />}
             placeholder="••••••••"
@@ -100,7 +123,8 @@ export const LoginPage: React.FC = () => {
             <label className="flex items-center cursor-pointer group">
               <input
                 type="checkbox"
-                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-2 focus:ring-primary-500/20 transition-all"
+                disabled={isSubmitting || loading}
+                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-2 focus:ring-primary-500/20 transition-all disabled:opacity-50"
               />
               <span className="ml-2 text-gray-600 group-hover:text-gray-900 transition-colors">
                 Se souvenir de moi
@@ -110,6 +134,9 @@ export const LoginPage: React.FC = () => {
             <Link
               to="/auth/forgot-password"
               className="font-medium text-primary-600 hover:text-primary-700 transition-colors"
+              onClick={(e) => {
+                if (isSubmitting || loading) e.preventDefault();
+              }}
             >
               Mot de passe oublié?
             </Link>
@@ -117,27 +144,31 @@ export const LoginPage: React.FC = () => {
 
           {/* Submit Button */}
           <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: loading || isSubmitting ? 1 : 1.02 }}
+            whileTap={{ scale: loading || isSubmitting ? 1 : 0.98 }}
           >
             <Button
               type="submit"
               variant="gradient"
               size="lg"
               fullWidth
-              loading={loading}
+              loading={loading || isSubmitting}
+              disabled={isSubmitting || loading}
               icon={<FaArrowRight />}
             >
-              {loading ? 'Connexion en cours...' : 'Se connecter'}
+              {loading || isSubmitting ? 'Connexion en cours...' : 'Se connecter'}
             </Button>
           </motion.div>
 
           {/* Register link */}
           <p className="text-center text-sm text-gray-600">
-            Pasde compte?{' '}
+            Pas de compte?{' '}
             <Link
               to="/auth/register"
               className="font-medium text-primary-600 hover:text-primary-700 transition-colors"
+              onClick={(e) => {
+                if (isSubmitting || loading) e.preventDefault();
+              }}
             >
               Créer un compte
             </Link>
