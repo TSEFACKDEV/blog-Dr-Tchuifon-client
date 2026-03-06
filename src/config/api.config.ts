@@ -2,11 +2,11 @@ import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'react-toastify';
 
 // Export de l'URL de base
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://blog-dr-tchuifon.onrender.com';
 
 // Configuration de base de l'API
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: `https://blog-dr-tchuifon.onrender.com/api`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -82,7 +82,7 @@ api.interceptors.response.use(
 
 // API pour les uploads de fichiers
 export const apiFormData = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: `https://blog-dr-tchuifon.onrender.com/api`,
   headers: {
     'Content-Type': 'multipart/form-data',
   },
