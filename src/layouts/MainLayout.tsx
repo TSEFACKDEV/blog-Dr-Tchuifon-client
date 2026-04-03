@@ -16,6 +16,7 @@ const navLinks = [
   { to: '/courses', label: 'Cours' },
   { to: '/supervisions', label: 'Encadrements' },
   { to: '/collaborators', label: 'Collaborateurs' },
+  { to: '/search', label: 'Recherche' },
   { to: '/contact', label: 'Contact' },
 ];
 

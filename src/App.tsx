@@ -15,6 +15,7 @@ import { PublicationsPage } from './pages/PublicationsPage';
 import { CoursesPage } from './pages/CoursesPage';
 import { SupervisionsPage } from './pages/SupervisionsPage';
 import { CollaboratorsPage } from './pages/CollaboratorsPage';
+import { ResearchSearchPage } from './pages/ResearchSearchPage';
 import { ContactPage } from './pages/ContactPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
@@ -71,6 +72,7 @@ function App() {
         <Route path="/supervisions/:id" element={<SupervisionDetailsPage />} />
         <Route path="/collaborators" element={<CollaboratorsPage />} />
         <Route path="/collaborators/:id" element={<CollaboratorDetailsPage />} />
+        <Route path="/search" element={<ResearchSearchPage />} />
         <Route path="/contact" element={<ContactPage />} />
 
         {/* Auth Routes */}
