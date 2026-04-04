@@ -30,10 +30,10 @@ export const ResearchSearchPage: React.FC = () => {
   const [filterLevel, setFilterLevel] = useState('all');
 
   useEffect(() => {
-    dispatch(getAllSupervisions({ limit: 100 }));
-    dispatch(getAllPublications({ limit: 100 }));
-    dispatch(getAllCourses({ limit: 100 }));
-    dispatch(getAllCollaborators({ limit: 100 }));
+    dispatch(getAllSupervisions({ limit: 0 }));
+    dispatch(getAllPublications({ limit: 0 }));
+    dispatch(getAllCourses({ limit: 0 }));
+    dispatch(getAllCollaborators({ limit: 0 }));
   }, [dispatch]);
 
   const isLoading = supervisionsLoading || publicationsLoading || coursesLoading || collaboratorsLoading;

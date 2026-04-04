@@ -6,13 +6,13 @@ import { toast } from 'react-toastify';
 // Get all collaborators (public)
 export const getAllCollaborators = createAsyncThunk(
   'collaborators/getAll',
-  async (filters: { search?: string; country?: string; page?: number; limit?: number } = {}, { rejectWithValue }) => {
+  async (filters: { search?: string; country?: string; page?: number; limit?: number } = { limit: 0 }, { rejectWithValue }) => {
     try {
       const params = new URLSearchParams();
       if (filters.search) params.append('search', filters.search);
       if (filters.country) params.append('country', filters.country);
       if (filters.page) params.append('page', filters.page.toString());
-      if (filters.limit) params.append('limit', filters.limit.toString());
+      if (filters.limit !== undefined) params.append('limit', filters.limit.toString());
 
       const response = await api.get(`/collaborators?${params.toString()}`);
       return response.data.data;

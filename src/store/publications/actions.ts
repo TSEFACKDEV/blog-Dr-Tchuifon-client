@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
  */
 export const getAllPublications = createAsyncThunk(
   'publications/getAll',
-  async (filters: PublicationFilters = {}, { rejectWithValue }) => {
+  async (filters: PublicationFilters = { limit: 0 }, { rejectWithValue }) => {
     try {
       const params = new URLSearchParams();
       
@@ -18,7 +18,7 @@ export const getAllPublications = createAsyncThunk(
       if (filters.keywords) params.append('keywords', filters.keywords);
       if (filters.search) params.append('search', filters.search);
       if (filters.page) params.append('page', filters.page.toString());
-      if (filters.limit) params.append('limit', filters.limit.toString());
+      if (filters.limit !== undefined) params.append('limit', filters.limit.toString());
 
       const response = await api.get(`/publications?${params.toString()}`);
       

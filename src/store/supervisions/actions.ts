@@ -7,13 +7,13 @@ import { toast } from 'react-toastify';
 // Get all supervisions (public)
 export const getAllSupervisions = createAsyncThunk(
   'supervisions/getAll',
-  async (filters: { level?: SupervisionLevel; status?: SupervisionStatus; page?: number; limit?: number } = {}, { rejectWithValue }) => {
+  async (filters: { level?: SupervisionLevel; status?: SupervisionStatus; page?: number; limit?: number } = { limit: 0 }, { rejectWithValue }) => {
     try {
       const params = new URLSearchParams();
       if (filters.level) params.append('level', filters.level);
       if (filters.status) params.append('status', filters.status);
       if (filters.page) params.append('page', filters.page.toString());
-      if (filters.limit) params.append('limit', filters.limit.toString());
+      if (filters.limit !== undefined) params.append('limit', filters.limit.toString());
 
       const response = await api.get(`/supervisions?${params.toString()}`);
       return response.data.data;
